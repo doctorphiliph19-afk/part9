@@ -1,3 +1,5 @@
+import { parseNumberArgument } from "./utils.js";
+
 interface Result {
   periodLength: number;
   trainingDays: number;
@@ -52,4 +54,20 @@ const calculateExercises = (
   };
 };
 
-console.log(calculateExercises([3, 0, 2, 4.5, 0, 3, 1], 2));
+try {
+  const args = process.argv.slice(2);
+  
+  if (args.length < 2) {
+    throw new Error('Please provide target and exercise hours as arguments');
+  }
+  
+  const target = parseNumberArgument(args[0]);
+  const dailyExerciseHours: number[] = args.slice(1).map((arg: string) => 
+    parseNumberArgument(arg)
+  );
+  
+  console.log(calculateExercises(dailyExerciseHours, target));
+} catch (error) {
+  console.error('Error:', (error as Error).message);
+  process.exit(1);
+}

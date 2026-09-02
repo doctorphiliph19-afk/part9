@@ -1,3 +1,5 @@
+import { parseNumberArgument } from "./utils.js";
+
 const calculateBmi = (height: number, weight: number): string => {
   const heightInMeters = height / 100;
   const bmi = weight / (heightInMeters * heightInMeters);
@@ -13,4 +15,18 @@ const calculateBmi = (height: number, weight: number): string => {
   }
 };
 
-console.log(calculateBmi(180, 74));
+try {
+  const args = process.argv.slice(2);
+  
+  if (args.length < 2) {
+    throw new Error('Please provide height and weight as arguments');
+  }
+  
+  const height = parseNumberArgument(args[0]);
+  const weight = parseNumberArgument(args[1]);
+  
+  console.log(calculateBmi(height, weight));
+} catch (error) {
+  console.error('Error:', (error as Error).message);
+  process.exit(1);
+}
