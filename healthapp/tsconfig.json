@@ -6,8 +6,10 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "module": "nodenext",
+    "module": "NodeNext",
     "esModuleInterop": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true
   }
 }
