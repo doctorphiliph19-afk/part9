@@ -4,7 +4,7 @@ import { calculateExercises } from './exerciseCalculator.ts';
 
 const app = express();
 
-const PORT = 3003;
+const PORT = 3000;
 
 app.use(express.json());
 
