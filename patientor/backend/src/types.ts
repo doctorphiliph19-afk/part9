@@ -17,3 +17,5 @@ export type NonSensitivePatient = Pick<
   Patient,
   "id" | "name" | "dateOfBirth" | "gender" | "occupation"
 >;
+
+export type NewPatient = Omit<Patient, "id">;
