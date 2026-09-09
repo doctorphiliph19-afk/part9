@@ -34,12 +34,14 @@ const PatientListPage = ({ patients, setPatients } : Props ) => {
       setModalOpen(false);
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
-        if (e?.response?.data && typeof e?.response?.data === "string") {
-          const message = e.response.data.replace('Something went wrong. Error: ', '');
-          console.error(message);
-          setError(message);
+        const responseData = e.response?.data as { error?: Array<{ message?: string }> | string } | string | undefined;
+        if (typeof responseData === "string") {
+          setError(responseData);
+        } else if (responseData?.error) {
+          const error = responseData.error;
+          setError(typeof error === "string" ? error : error.map((issue) => issue.message ?? "Invalid value").join(", "));
         } else {
-          setError("Unrecognized axios error");
+          setError("Could not create patient");
         }
       } else {
         console.error("Unknown error", e);

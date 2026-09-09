@@ -53,25 +53,29 @@ const AddPatientForm = ({ onCancel, onSubmit }: Props) => {
         <TextField
           label="Name"
           fullWidth 
+          required
           value={name}
           onChange={({ target }) => setName(target.value)}
         />
         <TextField
           label="Social security number"
           fullWidth
+          required
           value={ssn}
           onChange={({ target }) => setSsn(target.value)}
         />
         <TextField
           label="Date of birth"
-          placeholder="YYYY-MM-DD"
+          type="date"
           fullWidth
+          required
           value={dateOfBirth}
           onChange={({ target }) => setDateOfBirth(target.value)}
         />
         <TextField
           label="Occupation"
           fullWidth
+          required
           value={occupation}
           onChange={({ target }) => setOccupation(target.value)}
         />

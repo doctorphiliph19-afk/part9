@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export interface Diagnosis {
   code: string;
   name: string;
@@ -11,6 +13,14 @@ export const Gender = {
 } as const;
 
 export type Gender = typeof Gender[keyof typeof Gender];
+
+export const NewPatientSchema = z.object({
+  name: z.string(),
+  dateOfBirth: z.iso.date(),
+  ssn: z.string(),
+  gender: z.enum(Gender),
+  occupation: z.string(),
+});
 
 export interface Patient {
   id: string;
@@ -26,4 +36,4 @@ export type NonSensitivePatient = Pick<
   "id" | "name" | "dateOfBirth" | "gender" | "occupation"
 >;
 
-export type NewPatient = Omit<Patient, "id">;
+export type NewPatient = z.infer<typeof NewPatientSchema>;
