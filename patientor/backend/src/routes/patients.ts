@@ -1,9 +1,12 @@
 import express from "express";
 import patientService from "../services/patientService.ts";
+import { Gender } from "../types.ts";
 import type { NewPatient, NonSensitivePatient } from "../types.ts";
 
 const router = express.Router();
-const validGenders = ["male", "female", "other"] as const;
+
+const isGender = (value: unknown): value is Gender =>
+  Object.values(Gender).some((gender) => gender === value);
 
 const isNewPatient = (body: unknown): body is NewPatient => {
   if (typeof body !== "object" || body === null) return false;
@@ -11,8 +14,7 @@ const isNewPatient = (body: unknown): body is NewPatient => {
   const patient = body as Record<string, unknown>;
   return ["name", "dateOfBirth", "ssn", "occupation"]
     .every((field) => typeof patient[field] === "string") &&
-    typeof patient.gender === "string" &&
-    validGenders.includes(patient.gender as (typeof validGenders)[number]);
+    isGender(patient.gender);
 };
 
 router.get("/", (_req, res) => {
