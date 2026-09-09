@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "esnext",
     "noEmit": true,
-    "module": "NodeNext",
+    "module": "nodenext",
     "esModuleInterop": true,
     "allowImportingTsExtensions": true,
     "strict": true,
