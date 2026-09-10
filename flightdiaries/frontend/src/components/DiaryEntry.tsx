@@ -14,6 +14,12 @@ const DiaryEntry = ({ entry }: Props) => {
       <p>
         <strong>Visibility:</strong> {entry.visibility}
       </p>
+      <p>
+        <strong>Flight duration:</strong> {entry.flightDuration} hours
+      </p>
+      <p>
+        <strong>Flight type:</strong> {entry.flightType}
+      </p>
     </div>
   )
 }

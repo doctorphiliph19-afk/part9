@@ -23,6 +23,8 @@ export const NewEntrySchema = z.object({
   weather: z.enum(Weather),
   visibility: z.enum(Visibility),
   date: z.iso.date(),
+  flightDuration: z.number(),
+  flightType: z.string(),
   comment: z.string().optional()
 });
 

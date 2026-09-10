@@ -8,11 +8,13 @@ const getEntries = (): DiaryEntry[]  => {
 };
 
 const getNonSensitiveEntries = (): NonSensitiveDiaryEntry[] => {  
-  return diaries.map(({ id, date, weather, visibility }) => ({    
-    id,    
+  return diaries.map(({ id, date, weather, visibility, flightDuration, flightType }) => ({
+    id,
     date,
     weather,
     visibility,
+    flightDuration,
+    flightType,
   }));
 };
 
