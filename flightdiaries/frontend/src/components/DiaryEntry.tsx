@@ -9,17 +9,12 @@ const DiaryEntry = ({ entry }: Props) => {
     <div>
       <h3>{entry.date}</h3>
       <p>
-        <strong>Weather:</strong> {entry.weather}
+        visibility: {entry.visibility}
       </p>
       <p>
-        <strong>Visibility:</strong> {entry.visibility}
+        weather: {entry.weather}
       </p>
-      <p>
-        <strong>Flight duration:</strong> {entry.flightDuration} hours
-      </p>
-      <p>
-        <strong>Flight type:</strong> {entry.flightType}
-      </p>
+      {entry.comment && <p>comment: {entry.comment}</p>}
     </div>
   )
 }
