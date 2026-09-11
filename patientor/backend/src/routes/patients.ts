@@ -17,7 +17,7 @@ router.get("/:id", (req, res) => {
   if (patient) {
     res.json(patient);
   } else {
-    res.sendStatus(404);
+    res.status(404).json({ error: "Patient not found" });
   }
 });
 

@@ -8,6 +8,7 @@ const patients: Patient[] = [
 		ssn: "090786-122X",
 		gender: "male",
 		occupation: "New york city cop",
+		entries: [],
 	},
 	{
 		id: "2",
@@ -16,6 +17,7 @@ const patients: Patient[] = [
 		ssn: "020179-123Y",
 		gender: "male",
 		occupation: "Cop",
+		entries: [],
 	},
 ];
 
