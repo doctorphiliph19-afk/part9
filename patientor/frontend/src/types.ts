@@ -25,12 +25,9 @@ export type NonSensitivePatient = Omit<Patient, "ssn" | "entries">;
 export interface Entry {
   id: string;
   date: string;
-  type: "Hospital" | "HealthCheck";
   specialist: string;
   description: string;
   diagnosisCodes?: string[];
 }
-
-export type EntryFormValues = Pick<Entry, "date" | "description" | "specialist">;
 
 export type PatientFormValues = Omit<Patient, "id" | "entries">;
