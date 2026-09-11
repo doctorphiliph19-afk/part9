@@ -3,9 +3,14 @@ import { useParams } from "react-router-dom";
 import { Alert, Card, CardContent, Stack, Typography } from "@mui/material";
 
 import patientService from "../services/patients";
-import { Entry, Patient } from "../types";
+import { Diagnosis, Entry, Patient } from "../types";
 
-const EntryDetails = ({ entry }: { entry: Entry }) => {
+interface EntryDetailsProps {
+  entry: Entry;
+  diagnoses: Diagnosis[];
+}
+
+const EntryDetails = ({ entry, diagnoses }: EntryDetailsProps) => {
   return (
     <Card variant="outlined">
       <CardContent>
@@ -17,7 +22,9 @@ const EntryDetails = ({ entry }: { entry: Entry }) => {
         {entry.diagnosisCodes && entry.diagnosisCodes.length > 0 && (
           <ul>
             {entry.diagnosisCodes.map((code) => (
-              <li key={code}>{code}</li>
+              <li key={code}>
+                {code} {diagnoses.find((diagnosis) => diagnosis.code === code)?.name ?? "Unknown diagnosis"}
+              </li>
             ))}
           </ul>
         )}
@@ -26,7 +33,11 @@ const EntryDetails = ({ entry }: { entry: Entry }) => {
   );
 };
 
-const PatientPage = () => {
+interface PatientPageProps {
+  diagnoses: Diagnosis[];
+}
+
+const PatientPage = ({ diagnoses }: PatientPageProps) => {
   const { id } = useParams<{ id: string }>();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [error, setError] = useState<string>();
@@ -53,7 +64,7 @@ const PatientPage = () => {
         <Typography>No entries</Typography>
       ) : (
         patient.entries.map((entry) => (
-          <EntryDetails key={entry.id} entry={entry} />
+          <EntryDetails key={entry.id} entry={entry} diagnoses={diagnoses} />
         ))
       )}
 

@@ -2,6 +2,10 @@ import type { Diagnosis } from "../src/types.ts";
 
 const diagnoses: Diagnosis[] = [
   {
+    code: "S62.5",
+    name: "Fracture of thumb",
+  },
+  {
     code: "M24.9",
     name: "Joint disorder, unspecified",
   },
