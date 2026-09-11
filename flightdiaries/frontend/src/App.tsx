@@ -15,37 +15,40 @@ const App = () => {
     })
   }, [])
 
-  const addDiary = (entry: NewDiaryEntry) => {
+  const addDiary = async (entry: NewDiaryEntry) => {
     setError(null)
 
-    diaryService
-      .create(entry)
-      .then((data) => {
-        setEntries((currentEntries) => currentEntries.concat(data))
-      })
-      .catch((requestError: unknown) => {
-        if (axios.isAxiosError(requestError)) {
-          const backendError = requestError.response?.data?.error
-          const message = Array.isArray(backendError)
-            ? backendError.map((issue) => issue.message).join(', ')
-            : backendError
+    try {
+      const data = await diaryService.create(entry)
+      setEntries((currentEntries) => currentEntries.concat(data))
+    } catch (requestError: unknown) {
+      if (axios.isAxiosError(requestError)) {
+        const backendError = requestError.response?.data?.error
+        const message = Array.isArray(backendError)
+          ? backendError
+              .map((issue: { message?: string }) => issue.message)
+              .filter(Boolean)
+              .join(', ')
+          : typeof backendError === 'string'
+            ? backendError
+            : requestError.message
 
-          setError(message || requestError.message)
-          return
-        }
+        setError(message)
+        return
+      }
 
-        setError(
-          requestError instanceof Error
-            ? requestError.message
-            : 'Unknown error occurred'
-        )
-      })
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : 'Unknown error occurred'
+      )
+    }
   }
 
   return (
     <div>
       <h1>Flight Diaries</h1>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <div style={{ color: 'red' }}>Error: {error}</div>}
       <DiaryForm onSubmit={addDiary} />
       <h2>Diary entries</h2>
       {entries.map((entry) => (
