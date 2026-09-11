@@ -1,9 +1,16 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Alert, Card, CardContent, Stack, Typography } from "@mui/material";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
+import WorkIcon from "@mui/icons-material/Work";
 
 import patientService from "../services/patients";
 import { Diagnosis, Entry, Patient } from "../types";
+
+const assertNever = (value: never): never => {
+  throw new Error(`Unhandled entry type: ${JSON.stringify(value)}`);
+};
 
 interface EntryDetailsProps {
   entry: Entry;
@@ -11,6 +18,46 @@ interface EntryDetailsProps {
 }
 
 const EntryDetails = ({ entry, diagnoses }: EntryDetailsProps) => {
+  let typeDetails: React.ReactNode;
+
+  switch (entry.type) {
+    case "Hospital":
+      typeDetails = (
+        <>
+          <LocalHospitalIcon aria-label="hospital entry" />
+          {entry.discharge && (
+            <Typography>
+              Discharged {entry.discharge.date}: {entry.discharge.criteria}
+            </Typography>
+          )}
+        </>
+      );
+      break;
+    case "OccupationalHealthcare":
+      typeDetails = (
+        <>
+          <WorkIcon aria-label="occupational healthcare entry" />
+          <Typography>Employer: {entry.employerName}</Typography>
+          {entry.sickLeave && (
+            <Typography>
+              Sick leave: {entry.sickLeave.startDate} - {entry.sickLeave.endDate}
+            </Typography>
+          )}
+        </>
+      );
+      break;
+    case "HealthCheck":
+      typeDetails = (
+        <>
+          <FavoriteIcon aria-label="health check entry" color="error" />
+          <Typography>Health check rating: {entry.healthCheckRating}</Typography>
+        </>
+      );
+      break;
+    default:
+      return assertNever(entry);
+  }
+
   return (
     <Card variant="outlined">
       <CardContent>
@@ -19,6 +66,7 @@ const EntryDetails = ({ entry, diagnoses }: EntryDetailsProps) => {
         </Typography>
         <Typography>{entry.description}</Typography>
         <Typography>diagnosed by {entry.specialist}</Typography>
+        {typeDetails}
         {entry.diagnosisCodes && entry.diagnosisCodes.length > 0 && (
           <ul>
             {entry.diagnosisCodes.map((code) => (

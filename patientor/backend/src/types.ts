@@ -47,7 +47,21 @@ export interface HospitalEntry extends BaseEntry {
   };
 }
 
-export type Entry = OccupationalHealthcareEntry | HospitalEntry;
+export const HealthCheckRating = {
+  Healthy: 0,
+  LowRisk: 1,
+  HighRisk: 2,
+  CriticalRisk: 3,
+} as const;
+
+export type HealthCheckRating = typeof HealthCheckRating[keyof typeof HealthCheckRating];
+
+export interface HealthCheckEntry extends BaseEntry {
+  type: "HealthCheck";
+  healthCheckRating: HealthCheckRating;
+}
+
+export type Entry = OccupationalHealthcareEntry | HospitalEntry | HealthCheckEntry;
 
 export interface Patient {
   id: string;
