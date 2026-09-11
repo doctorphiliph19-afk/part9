@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "tsc": "tsc",
+    "build": "tsc",
     "dev": "node --watch --experimental-transform-types src/index.ts",
     "start": "node --experimental-transform-types src/index.ts",
     "lint": "eslint ."

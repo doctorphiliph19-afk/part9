@@ -8,7 +8,7 @@ import { EntryFormValues, Patient } from "../types";
 
 const PatientPage = () => {
   const { id } = useParams<{ id: string }>();
-  const [patient, setPatient] = useState<Patient>();
+  const [patient, setPatient] = useState<Patient | null>(null);
   const [error, setError] = useState<string>();
   const [entryFormOpen, setEntryFormOpen] = useState(false);
   const [form, setForm] = useState<EntryFormValues>({ date: "", description: "", specialist: "" });
@@ -29,7 +29,7 @@ const PatientPage = () => {
     if (!id) return;
     try {
       const entry = await patientService.createEntry(id, form);
-      setPatient((current) => current && { ...current, entries: [...(current.entries ?? []), entry] });
+      setPatient((current) => current && { ...current, entries: [...current.entries, entry] });
       setForm({ date: "", description: "", specialist: "" });
     } catch (requestError) {
       if (axios.isAxiosError(requestError)) setError("Could not add entry");
@@ -47,7 +47,7 @@ const PatientPage = () => {
       <Typography>Date of birth: {patient.dateOfBirth}</Typography>
 
       <Typography variant="h5">Entries</Typography>
-      {(patient.entries ?? []).map((entry) => (
+      {patient.entries.map((entry) => (
         <Card key={entry.id} variant="outlined">
           <CardContent>
             <Typography variant="subtitle1">{entry.type} - {entry.date}</Typography>
