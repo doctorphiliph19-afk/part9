@@ -1,74 +1,46 @@
 import { useState } from "react";
+import {
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import type { SelectChangeEvent } from "@mui/material/Select";
 
-import { Entry, HealthCheckEntry, HealthCheckRating } from "../types";
+import { Diagnosis, Entry, HealthCheckEntry, HealthCheckRating } from "../types";
 
 interface EntryFormProps {
   onCancel: () => void;
   onSubmit: (entry: Omit<Entry, "id">) => Promise<void>;
+  diagnoses: Diagnosis[];
 }
 
 type EntryType = "HealthCheck" | "OccupationalHealthcare" | "Hospital";
 
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  border: "1px solid #9a9a9a",
-  background: "transparent",
-  color: "#111",
-  fontSize: "18px",
-  padding: "10px 12px",
-  boxSizing: "border-box",
-  borderRadius: "4px",
-  marginTop: "6px",
-  fontFamily: "inherit",
-};
+const ratingOptions = [
+  { value: 0, label: "0 — Healthy" },
+  { value: 1, label: "1 — Low Risk" },
+  { value: 2, label: "2 — High Risk" },
+  { value: 3, label: "3 — Critical Risk" },
+];
 
-const selectStyle: React.CSSProperties = {
-  ...inputStyle,
-  appearance: "none",
-  WebkitAppearance: "none",
-  background: "transparent",
-  border: "2px solid #1a73e8",
-  borderRadius: "4px",
-  color: "#111",
-  paddingRight: "36px",
-};
-
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: "18px",
-  color: "#111",
-  marginBottom: "12px",
-  fontWeight: 500,
-};
-
-const buttonStyle: React.CSSProperties = {
-  padding: "10px 20px",
-  border: "1px solid #1f7ae0",
-  borderRadius: "4px",
-  fontSize: "17px",
-  fontWeight: 600,
-  cursor: "pointer",
-  letterSpacing: "0.02em",
-};
-
-const parseDiagnosisCodes = (codes: string) =>
-  codes
-    .split(",")
-    .map((code) => code.trim())
-    .filter((code) => code.length > 0);
-
-const EntryForm = ({ onCancel, onSubmit }: EntryFormProps) => {
+const EntryForm = ({ onCancel, onSubmit, diagnoses }: EntryFormProps) => {
   const [entryType, setEntryType] = useState<EntryType>("HealthCheck");
   const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
   const [specialist, setSpecialist] = useState("");
-  const [healthCheckRating, setHealthCheckRating] = useState("");
+  const [healthCheckRating, setHealthCheckRating] = useState<number | "">("");
   const [employerName, setEmployerName] = useState("");
   const [sickLeaveStart, setSickLeaveStart] = useState("");
   const [sickLeaveEnd, setSickLeaveEnd] = useState("");
   const [dischargeDate, setDischargeDate] = useState("");
   const [dischargeCriteria, setDischargeCriteria] = useState("");
-  const [diagnosisCodes, setDiagnosisCodes] = useState("");
+  const [selectedDiagnosisCodes, setSelectedDiagnosisCodes] = useState<string[]>([]);
   const [error, setError] = useState("");
 
   const submit = async (event: React.SyntheticEvent) => {
@@ -79,9 +51,7 @@ const EntryForm = ({ onCancel, onSubmit }: EntryFormProps) => {
 
       switch (entryType) {
         case "HealthCheck": {
-          const rating = Number(healthCheckRating);
-
-          if (!Number.isInteger(rating) || rating < 0 || rating > 3) {
+          if (typeof healthCheckRating !== "number" || !Number.isInteger(healthCheckRating) || healthCheckRating < 0 || healthCheckRating > 3) {
             setError("Health Check Rating must be between 0 and 3");
             return;
           }
@@ -91,8 +61,8 @@ const EntryForm = ({ onCancel, onSubmit }: EntryFormProps) => {
             date,
             description,
             specialist,
-            healthCheckRating: rating as HealthCheckRating,
-            diagnosisCodes: parseDiagnosisCodes(diagnosisCodes),
+            healthCheckRating: healthCheckRating as HealthCheckRating,
+            diagnosisCodes: selectedDiagnosisCodes,
           } as Omit<HealthCheckEntry, "id">;
           break;
         }
@@ -115,7 +85,7 @@ const EntryForm = ({ onCancel, onSubmit }: EntryFormProps) => {
                   endDate: sickLeaveEnd,
                 }
               : undefined,
-            diagnosisCodes: parseDiagnosisCodes(diagnosisCodes),
+            diagnosisCodes: selectedDiagnosisCodes,
           } as Omit<Entry, "id">;
           break;
         }
@@ -132,7 +102,7 @@ const EntryForm = ({ onCancel, onSubmit }: EntryFormProps) => {
                   criteria: dischargeCriteria,
                 }
               : undefined,
-            diagnosisCodes: parseDiagnosisCodes(diagnosisCodes),
+            diagnosisCodes: selectedDiagnosisCodes,
           } as Omit<Entry, "id">;
           break;
         }
@@ -151,179 +121,241 @@ const EntryForm = ({ onCancel, onSubmit }: EntryFormProps) => {
     }
   };
 
+  const handleDiagnosisChange = (event: SelectChangeEvent<string[]>) => {
+    const value = event.target.value as string[];
+    setSelectedDiagnosisCodes(value);
+  };
+
   return (
-    <div
-      style={{
+    <Stack
+      component="form"
+      onSubmit={submit}
+      spacing={2}
+      sx={{
         border: "2px dashed #666",
-        borderRadius: "0",
-        padding: "28px 20px 20px 20px",
-        marginTop: "26px",
-        background: "transparent",
+        p: 3,
+        mt: 3,
       }}
     >
-      <h2 style={{ margin: "0 0 20px 0", fontSize: "28px", fontWeight: 700 }}>New Entry</h2>
+      <Typography variant="h4">New Entry</Typography>
 
       {error && (
-        <div
-          style={{
-            color: "#d32f2f",
-            marginBottom: "16px",
-            fontSize: "16px",
-          }}
-        >
+        <Typography color="error" variant="body2">
           {error}
-        </div>
+        </Typography>
       )}
 
-      <form onSubmit={submit}>
-        <label style={labelStyle}>
-          Entry type
-          <select
-            value={entryType}
-            onChange={({ target }) => setEntryType(target.value as EntryType)}
-            style={selectStyle}
-          >
-            <option value="HealthCheck">Health Check</option>
-            <option value="OccupationalHealthcare">Occupational Healthcare</option>
-            <option value="Hospital">Hospital</option>
-          </select>
-        </label>
+      <FormControl fullWidth>
+        <InputLabel id="entry-type-label">Entry type</InputLabel>
+        <Select
+          labelId="entry-type-label"
+          id="entry-type"
+          value={entryType}
+          label="Entry type"
+          onChange={(event) => setEntryType(event.target.value as EntryType)}
+          sx={{
+            border: "1px solid #7a7a7a",
+            borderRadius: 0,
+            backgroundColor: "#f5f5f5",
+            '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+            '& .MuiSelect-select': { py: 1.8 },
+            '&.Mui-focused': { borderColor: '#1a73e8' },
+          }}
+          MenuProps={{
+            PaperProps: {
+              sx: {
+                border: "2px solid #666",
+                borderRadius: 0,
+                boxShadow: "none",
+                mt: 0.5,
+              },
+            },
+          }}
+        >
+          <MenuItem value="HealthCheck">Health Check</MenuItem>
+          <MenuItem value="OccupationalHealthcare">Occupational Healthcare</MenuItem>
+          <MenuItem value="Hospital">Hospital</MenuItem>
+        </Select>
+      </FormControl>
 
-        <label style={labelStyle}>
-          Date *
-          <input
-            type="date"
-            value={date}
-            onChange={({ target }) => setDate(target.value)}
-            required
-            style={inputStyle}
-          />
-        </label>
+      <TextField
+        label="Date"
+        type="date"
+        value={date}
+        onChange={({ target }) => setDate(target.value)}
+        required
+        InputLabelProps={{ shrink: true }}
+      />
 
-        <label style={labelStyle}>
-          Description *
-          <input
-            type="text"
-            value={description}
-            onChange={({ target }) => setDescription(target.value)}
-            required
-            style={inputStyle}
-          />
-        </label>
+      <TextField
+        label="Description"
+        value={description}
+        onChange={({ target }) => setDescription(target.value)}
+        required
+      />
 
-        <label style={labelStyle}>
-          Specialist *
-          <input
-            type="text"
-            value={specialist}
-            onChange={({ target }) => setSpecialist(target.value)}
-            required
-            style={inputStyle}
-          />
-        </label>
+      <TextField
+        label="Specialist"
+        value={specialist}
+        onChange={({ target }) => setSpecialist(target.value)}
+        required
+      />
 
-        {entryType === "HealthCheck" && (
-          <label style={labelStyle}>
-            Health Check Rating (0-3) *
-            <input
-              type="number"
-              min="0"
-              max="3"
-              value={healthCheckRating}
-              onChange={({ target }) => setHealthCheckRating(target.value)}
-              required
-              style={inputStyle}
-            />
-          </label>
-        )}
-
-        {entryType === "OccupationalHealthcare" && (
-          <>
-            <label style={labelStyle}>
-              Employer name *
-              <input
-                type="text"
-                value={employerName}
-                onChange={({ target }) => setEmployerName(target.value)}
-                required
-                style={inputStyle}
-              />
-            </label>
-
-            <label style={labelStyle}>
-              Sick leave start date
-              <input
-                type="date"
-                value={sickLeaveStart}
-                onChange={({ target }) => setSickLeaveStart(target.value)}
-                style={inputStyle}
-              />
-            </label>
-
-            <label style={labelStyle}>
-              Sick leave end date
-              <input
-                type="date"
-                value={sickLeaveEnd}
-                onChange={({ target }) => setSickLeaveEnd(target.value)}
-                style={inputStyle}
-              />
-            </label>
-          </>
-        )}
-
-        {entryType === "Hospital" && (
-          <>
-            <label style={labelStyle}>
-              Discharge date
-              <input
-                type="date"
-                value={dischargeDate}
-                onChange={({ target }) => setDischargeDate(target.value)}
-                style={inputStyle}
-              />
-            </label>
-
-            <label style={labelStyle}>
-              Discharge criteria
-              <input
-                type="text"
-                value={dischargeCriteria}
-                onChange={({ target }) => setDischargeCriteria(target.value)}
-                style={inputStyle}
-              />
-            </label>
-          </>
-        )}
-
-        <label style={labelStyle}>
-          Diagnosis Codes (comma-separated)
-          <input
-            type="text"
-            value={diagnosisCodes}
-            onChange={({ target }) => setDiagnosisCodes(target.value)}
-            style={inputStyle}
-          />
-        </label>
-
-        <div style={{ marginTop: "18px", display: "flex", gap: "10px" }}>
-          <button type="submit" style={{ ...buttonStyle, background: "#1a73e8", color: "#fff" }}>
-            ADD
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            style={{
-              ...buttonStyle,
-              background: "transparent",
-              color: "#1a73e8",
+      {entryType === "HealthCheck" && (
+        <FormControl fullWidth>
+          <InputLabel id="health-rating-label">Health Check Rating</InputLabel>
+          <Select
+            labelId="health-rating-label"
+            id="health-rating"
+            value={healthCheckRating}
+            label="Health Check Rating"
+            onChange={(event) => setHealthCheckRating(event.target.value as number | "")}
+            sx={{
+              border: "1px solid #7a7a7a",
+              borderRadius: 0,
+              backgroundColor: "#f7f7f7",
+              '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+              '& .MuiSelect-select': { py: 1.8 },
+              '&.Mui-focused': { borderColor: '#1a73e8' },
+            }}
+            MenuProps={{
+              PaperProps: {
+                sx: {
+                  border: "2px solid #666",
+                  borderRadius: 0,
+                  boxShadow: "none",
+                  mt: 0.5,
+                },
+              },
             }}
           >
-            CANCEL
-          </button>
-        </div>
-      </form>
-    </div>
+            {ratingOptions.map((option) => (
+              <MenuItem
+                key={option.value}
+                value={option.value}
+                sx={{
+                  fontSize: "1.1rem",
+                  py: 1.5,
+                  backgroundColor: healthCheckRating === option.value ? "#dfeaf8" : "transparent",
+                  '&.Mui-selected': {
+                    backgroundColor: '#dfeaf8',
+                  },
+                  '&.Mui-selected:hover': {
+                    backgroundColor: '#dfeaf8',
+                  },
+                }}
+              >
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      )}
+
+      {entryType === "OccupationalHealthcare" && (
+        <>
+          <TextField
+            label="Employer name"
+            value={employerName}
+            onChange={({ target }) => setEmployerName(target.value)}
+            required
+          />
+
+          <TextField
+            label="Sick leave start date"
+            type="date"
+            value={sickLeaveStart}
+            onChange={({ target }) => setSickLeaveStart(target.value)}
+            InputLabelProps={{ shrink: true }}
+          />
+
+          <TextField
+            label="Sick leave end date"
+            type="date"
+            value={sickLeaveEnd}
+            onChange={({ target }) => setSickLeaveEnd(target.value)}
+            InputLabelProps={{ shrink: true }}
+          />
+        </>
+      )}
+
+      {entryType === "Hospital" && (
+        <>
+          <TextField
+            label="Discharge date"
+            type="date"
+            value={dischargeDate}
+            onChange={({ target }) => setDischargeDate(target.value)}
+            InputLabelProps={{ shrink: true }}
+          />
+
+          <TextField
+            label="Discharge criteria"
+            value={dischargeCriteria}
+            onChange={({ target }) => setDischargeCriteria(target.value)}
+          />
+        </>
+      )}
+
+      <FormControl fullWidth>
+        <InputLabel id="diagnosis-codes-label">Diagnosis codes</InputLabel>
+        <Select
+          labelId="diagnosis-codes-label"
+          id="diagnosis-codes"
+          multiple
+          value={selectedDiagnosisCodes}
+          onChange={handleDiagnosisChange}
+          input={<OutlinedInput label="Diagnosis codes" />}
+          sx={{
+            border: "1px solid #7a7a7a",
+            borderRadius: 0,
+            backgroundColor: "#f7f7f7",
+            '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+            '& .MuiSelect-select': { py: 1.8 },
+            '&.Mui-focused': { borderColor: '#1a73e8' },
+          }}
+          MenuProps={{
+            PaperProps: {
+              sx: {
+                border: "2px solid #666",
+                borderRadius: 0,
+                boxShadow: "none",
+                mt: 0.5,
+              },
+            },
+          }}
+        >
+          {diagnoses.map((diagnosis) => (
+            <MenuItem
+              key={diagnosis.code}
+              value={diagnosis.code}
+              sx={{
+                fontSize: "1.1rem",
+                py: 1.4,
+                backgroundColor: selectedDiagnosisCodes.includes(diagnosis.code) ? "#dfeaf8" : "transparent",
+                '&.Mui-selected': {
+                  backgroundColor: '#dfeaf8',
+                },
+                '&.Mui-selected:hover': {
+                  backgroundColor: '#dfeaf8',
+                },
+              }}
+            >
+              {diagnosis.code} — {diagnosis.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <Stack direction="row" spacing={2}>
+        <Button type="submit" variant="contained">
+          ADD
+        </Button>
+        <Button type="button" variant="outlined" onClick={onCancel}>
+          CANCEL
+        </Button>
+      </Stack>
+    </Stack>
   );
 };
 

@@ -142,7 +142,7 @@ const PatientPage = ({ diagnoses }: PatientPageProps) => {
           </button>
         )}
 
-        {showForm && <EntryForm onCancel={() => setShowForm(false)} onSubmit={submitEntry} />}
+        {showForm && <EntryForm onCancel={() => setShowForm(false)} onSubmit={submitEntry} diagnoses={diagnoses} />}
       </div>
 
       {error && !showForm && <div style={{ color: "#d32f2f", marginTop: "12px" }}>{error}</div>}
