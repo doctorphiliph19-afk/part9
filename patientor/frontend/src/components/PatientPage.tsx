@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import patientService from "../services/patients";
-import { Diagnosis, Entry, HealthCheckEntry, Patient } from "../types";
+import { Diagnosis, Entry, Patient } from "../types";
 import EntryForm from "./EntryForm";
 
 const assertNever = (value: never): never => {
@@ -87,7 +87,7 @@ const PatientPage = ({ diagnoses }: PatientPageProps) => {
       .catch(() => setError("Could not load patient"));
   }, [id]);
 
-  const submitEntry = async (entry: Omit<HealthCheckEntry, "id">) => {
+  const submitEntry = async (entry: Omit<Entry, "id">) => {
     if (!id) return;
 
     try {
