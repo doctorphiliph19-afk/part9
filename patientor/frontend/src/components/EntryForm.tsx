@@ -34,7 +34,7 @@ const EntryForm = ({ onCancel, onSubmit, diagnoses }: EntryFormProps) => {
   const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
   const [specialist, setSpecialist] = useState("");
-  const [healthCheckRating, setHealthCheckRating] = useState<number | "">("");
+  const [healthCheckRating, setHealthCheckRating] = useState<number | "">(HealthCheckRating.Healthy);
   const [employerName, setEmployerName] = useState("");
   const [sickLeaveStart, setSickLeaveStart] = useState("");
   const [sickLeaveEnd, setSickLeaveEnd] = useState("");
