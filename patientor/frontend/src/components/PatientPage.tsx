@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Alert, Card, CardContent, Stack, Typography } from "@mui/material";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
-import WorkIcon from "@mui/icons-material/Work";
 
 import patientService from "../services/patients";
-import { Diagnosis, Entry, Patient } from "../types";
+import { Diagnosis, Entry, HealthCheckEntry, Patient } from "../types";
+import EntryForm from "./EntryForm";
 
 const assertNever = (value: never): never => {
   throw new Error(`Unhandled entry type: ${JSON.stringify(value)}`);
@@ -24,60 +21,52 @@ const EntryDetails = ({ entry, diagnoses }: EntryDetailsProps) => {
     case "Hospital":
       typeDetails = (
         <>
-          <LocalHospitalIcon aria-label="hospital entry" />
-          {entry.discharge && (
-            <Typography>
-              Discharged {entry.discharge.date}: {entry.discharge.criteria}
-            </Typography>
-          )}
+          <div>Discharged {entry.discharge?.date}: {entry.discharge?.criteria}</div>
         </>
       );
       break;
     case "OccupationalHealthcare":
       typeDetails = (
         <>
-          <WorkIcon aria-label="occupational healthcare entry" />
-          <Typography>Employer: {entry.employerName}</Typography>
+          <div>Employer: {entry.employerName}</div>
           {entry.sickLeave && (
-            <Typography>
+            <div>
               Sick leave: {entry.sickLeave.startDate} - {entry.sickLeave.endDate}
-            </Typography>
+            </div>
           )}
         </>
       );
       break;
     case "HealthCheck":
-      typeDetails = (
-        <>
-          <FavoriteIcon aria-label="health check entry" color="error" />
-          <Typography>Health check rating: {entry.healthCheckRating}</Typography>
-        </>
-      );
+      typeDetails = <div>Health check rating: {entry.healthCheckRating}</div>;
       break;
     default:
       return assertNever(entry);
   }
 
   return (
-    <Card variant="outlined">
-      <CardContent>
-        <Typography>
-          <strong>{entry.date}</strong>
-        </Typography>
-        <Typography>{entry.description}</Typography>
-        <Typography>diagnosed by {entry.specialist}</Typography>
-        {typeDetails}
-        {entry.diagnosisCodes && entry.diagnosisCodes.length > 0 && (
-          <ul>
-            {entry.diagnosisCodes.map((code) => (
-              <li key={code}>
-                {code} {diagnoses.find((diagnosis) => diagnosis.code === code)?.name ?? "Unknown diagnosis"}
-              </li>
-            ))}
-          </ul>
-        )}
-      </CardContent>
-    </Card>
+    <div
+      style={{
+        border: "1px solid #d0d0d0",
+        background: "#f9f9f9",
+        padding: "16px",
+        marginBottom: "16px",
+      }}
+    >
+      <div><strong>{entry.date}</strong></div>
+      <div>{entry.description}</div>
+      <div>diagnosed by {entry.specialist}</div>
+      {typeDetails}
+      {entry.diagnosisCodes && entry.diagnosisCodes.length > 0 && (
+        <ul>
+          {entry.diagnosisCodes.map((code) => (
+            <li key={code}>
+              {code} {diagnoses.find((diagnosis) => diagnosis.code === code)?.name ?? "Unknown diagnosis"}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 };
 
@@ -89,6 +78,7 @@ const PatientPage = ({ diagnoses }: PatientPageProps) => {
   const { id } = useParams<{ id: string }>();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [error, setError] = useState<string>();
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -97,26 +87,77 @@ const PatientPage = ({ diagnoses }: PatientPageProps) => {
       .catch(() => setError("Could not load patient"));
   }, [id]);
 
-  if (error) return <Alert severity="error">{error}</Alert>;
-  if (!patient) return <Typography>Loading patient...</Typography>;
+  const submitEntry = async (entry: Omit<HealthCheckEntry, "id">) => {
+    if (!id) return;
+
+    try {
+      const addedEntry = await patientService.addEntry(id, entry);
+      setPatient((currentPatient) => {
+        if (!currentPatient) return currentPatient;
+
+        return {
+          ...currentPatient,
+          entries: [...currentPatient.entries, addedEntry],
+        };
+      });
+      setShowForm(false);
+      setError(undefined);
+    } catch (submitError) {
+      if (submitError instanceof Error) {
+        setError(submitError.message);
+      } else {
+        setError("Failed to add entry");
+      }
+    }
+  };
+
+  if (error && !patient) return <div style={{ color: "#d32f2f" }}>{error}</div>;
+  if (!patient) return <div>Loading patient...</div>;
 
   return (
-    <Stack spacing={3}>
-      <Typography variant="h4">{patient.name}</Typography>
-      <Typography>SSN: {patient.ssn}</Typography>
-      <Typography>Occupation: {patient.occupation}</Typography>
-      <Typography>Date of birth: {patient.dateOfBirth}</Typography>
+    <div style={{ fontFamily: "sans-serif", color: "#111", lineHeight: 1.5 }}>
+      <h1 style={{ margin: "0 0 16px 0", fontSize: "42px", fontWeight: 700 }}>
+        {patient.name} {patient.gender === "male" && "♂"} {patient.gender === "female" && "♀"} {patient.gender === "other" && "⚥"}
+      </h1>
 
-      <Typography variant="h5">Entries</Typography>
-      {patient.entries.length === 0 ? (
-        <Typography>No entries</Typography>
-      ) : (
-        patient.entries.map((entry) => (
-          <EntryDetails key={entry.id} entry={entry} diagnoses={diagnoses} />
-        ))
-      )}
+      <p style={{ margin: "0 0 8px 0", fontSize: "20px" }}>ssn: {patient.ssn}</p>
+      <p style={{ margin: "0 0 8px 0", fontSize: "20px" }}>occupation: {patient.occupation}</p>
+      <p style={{ margin: "0 0 20px 0", fontSize: "20px" }}>date of birth: {patient.dateOfBirth}</p>
 
-    </Stack>
+      <div style={{ borderTop: "2px dashed #666", marginTop: "8px", paddingTop: "18px" }}>
+        {!showForm && (
+          <button
+            onClick={() => setShowForm(true)}
+            style={{
+              background: "transparent",
+              border: "none",
+              color: "#1a73e8",
+              padding: 0,
+              fontSize: "17px",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            ADD NEW ENTRY
+          </button>
+        )}
+
+        {showForm && <EntryForm onCancel={() => setShowForm(false)} onSubmit={submitEntry} />}
+      </div>
+
+      {error && !showForm && <div style={{ color: "#d32f2f", marginTop: "12px" }}>{error}</div>}
+
+      <div style={{ marginTop: "24px" }}>
+        <h2 style={{ margin: "0 0 12px 0", fontSize: "28px" }}>Entries</h2>
+        {patient.entries.length === 0 ? (
+          <p>No entries</p>
+        ) : (
+          patient.entries.map((entry) => (
+            <EntryDetails key={entry.id} entry={entry} diagnoses={diagnoses} />
+          ))
+        )}
+      </div>
+    </div>
   );
 };
 
